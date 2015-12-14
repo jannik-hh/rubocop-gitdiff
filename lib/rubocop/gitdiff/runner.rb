@@ -1,5 +1,6 @@
 require "rubocop"
 require 'rubocop/gitdiff/changed_lines_detector'
+require 'rubocop/gitdiff/untracked_file_detector'
 
 module Rubocop
   module Gitdiff
@@ -37,8 +38,11 @@ module Rubocop
       private
 
       def filter_offenses(offenses, file)
-        changed_lines = ChangedLinesDetector.new(file).detect_changed_lines
+        if UntrackedFileDectector.new(file).untrackted?
+          return offenses
+        end
 
+        changed_lines = ChangedLinesDetector.new(file).detect_changed_lines
         offenses.select do |offense|
           location = offense.location
           first_line = location.first_line || 1
